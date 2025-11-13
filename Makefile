@@ -1,51 +1,51 @@
 # Makefile para o projeto SIMCON
 # Compilador C a ser usado
 CC = gcc
-# Flags de compilação: -Wall (warnings), -Wextra (mais warnings), -std=c99 (padrão C99)
+# Flags de compilação: -Wall (avisos), -Wextra (mais avisos), -std=c99 (padrão C99)
 CFLAGS = -Wall -Wextra -std=c99
 
 # Nome do executável final
-TARGET = simcon
+ALVO = simcon
 
 # Diretório de código-fonte
-SRC_DIR = src
+DIR_FONTES = src
 # Diretório de arquivos objeto
-OBJ_DIR = obj
+DIR_OBJETOS = obj
 # Diretório onde o executável será colocado (raiz do projeto)
-BIN_DIR = .
+DIR_BIN = .
 
 # Lista de todos os arquivos .c no diretório src
-SRCS = $(wildcard $(SRC_DIR)/*.c)
-# Substitui a extensão .c por .o e muda o diretório de src para obj
-OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
+FONTES = $(wildcard $(DIR_FONTES)/*.c)
+# Substitui a extensão .c por .o e muda o diretório
+OBJETOS = $(patsubst $(DIR_FONTES)/%.c, $(DIR_OBJETOS)/%.o, $(FONTES))
 
 # Objetivo principal (default): compilar o projeto
-.PHONY: all
-all: $(BIN_DIR)/$(TARGET)
+.PHONY: tudo
+tudo: $(DIR_BIN)/$(ALVO)
 
 # Cria o executável final: depende de todos os objetos
-$(BIN_DIR)/$(TARGET): $(OBJS)
-	@mkdir -p $(BIN_DIR)
+$(DIR_BIN)/$(ALVO): $(OBJETOS)
+	@mkdir -p $(DIR_BIN)
 	$(CC) $(CFLAGS) $^ -o $@
 
-# Cria o diretório de objetos antes de compilar os objetos, se ele não existir
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(OBJ_DIR)
+# Cria o diretório de objetos antes de compilar os objetos
+$(DIR_OBJETOS)/%.o: $(DIR_FONTES)/%.c
+	@mkdir -p $(DIR_OBJETOS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Regra para limpar arquivos gerados
-.PHONY: clean
-clean:
-	@rm -rf $(OBJ_DIR) $(BIN_DIR)/$(TARGET) $(wildcard data/*.bin)
+.PHONY: limpar
+limpar:
+	@rm -rf $(DIR_OBJETOS) $(DIR_BIN)/$(ALVO) $(wildcard data/*.bin)
 	@echo "Arquivos temporários e executável limpos."
 
-# Regra para remover apenas o arquivo de dados binário
-.PHONY: cleandata
-cleandata:
-	@rm -f data/contacts.bin
-	@echo "Arquivo de dados (contacts.bin) limpo."
+# Regra para limpar apenas o arquivo de dados binário
+.PHONY: limpar_dados
+limpar_dados:
+	@rm -f data/contatos.bin
+	@echo "Arquivo de dados (contatos.bin) limpo."
 
 # Regra de execução de exemplo
-.PHONY: run
-run: $(BIN_DIR)/$(TARGET)
-	./$(TARGET) list
+.PHONY: rodar
+rodar: $(DIR_BIN)/$(ALVO)
+	./$(ALVO) listar
