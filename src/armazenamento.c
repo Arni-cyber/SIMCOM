@@ -73,3 +73,47 @@ int salvar_contatos(const char *nome_arquivo, const Contato *lista, size_t conta
     fclose(arquivo);
     return 0;
 }
+
+/**
+ * @brief Exporta a lista de contatos para um arquivo texto ou CSV.
+ * @param nome_arquivo O nome do arquivo de saida.
+ * @param formato O formato de exportacao ("texto" ou "csv").
+ * @param lista Lista de contatos.
+ * @param contador Numero de contatos.
+ * @return 0 em sucesso, -1 em falha.
+ */
+int exportar_contatos(const char *nome_arquivo, const char *formato, 
+                      const Contato *lista, size_t contador) {
+    
+    FILE *arquivo = fopen(nome_arquivo, "w"); // Modo escrita de texto 'w'
+
+    if (arquivo == NULL) {
+        fprintf(stderr, "Erro ao abrir o arquivo para exportar: %s\n", nome_arquivo);
+        return -1;
+    }
+
+    if (strcmp(formato, "csv") == 0) {
+        // Cabeçalho CSV
+        fprintf(arquivo, "ID,Nome,Email,Idade\n");
+        // Corpo CSV
+        for (size_t i = 0; i < contador; i++) {
+            fprintf(arquivo, "%u,\"%s\",\"%s\",%u\n", 
+                    lista[i].id, lista[i].nome, lista[i].email, lista[i].idade);
+        }
+    } else if (strcmp(formato, "texto") == 0) {
+        // Formato de texto simples
+        fprintf(arquivo, "--- Relatório de Contatos ---\n");
+        for (size_t i = 0; i < contador; i++) {
+            fprintf(arquivo, "ID: %u | Nome: %s | Email: %s | Idade: %u\n", 
+                    lista[i].id, lista[i].nome, lista[i].email, lista[i].idade);
+        }
+    } else {
+        fprintf(stderr, "Formato de exportação desconhecido: %s\n", formato);
+        fclose(arquivo);
+        return -1;
+    }
+
+    printf("Exportação concluída para o arquivo: %s\n", nome_arquivo);
+    fclose(arquivo);
+    return 0;
+}
