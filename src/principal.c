@@ -51,11 +51,72 @@ int main(int argc, char *argv[]) {
             qsort(lista, contador, sizeof(Contato), func_comparacao); 
             listar_contatos(lista, contador); 
 
-        } else {
-            // Outros subcomandos (buscar, remover, exportar) - *A SER IMPLEMENTADO*
-            fprintf(stderr, "Comando desconhecido: %s\n", subcomando);
-        }
 
+// 2. Parsing de linha de comando
+    if (argc >= 2) {
+        const char *subcomando = argv[1];
+
+        // ... Comandos ADICIONAR e LISTAR (como no exemplo anterior) ...
+
+        if (strcmp(subcomando, "buscar") == 0 || strcmp(subcomando, "find") == 0) {
+            // Comando: ./simcon buscar <consulta> [nome|email]
+            if (argc < 3) {
+                fprintf(stderr, "Uso: ./simcon buscar <substring> [nome|email]\n");
+            } else {
+                const char *consulta = argv[2];
+                // Padrao: busca por nome (callback)
+                int (*func_busca_cb)(const Contato*, const char*) = busca_por_nome_cb; 
+                char *campo = "nome";
+
+                // Verifica se o campo de busca foi especificado
+                if (argc >= 4) {
+                    if (strcmp(argv[3], "email") == 0) {
+                        func_busca_cb = busca_por_email_cb;
+                        campo = "email";
+                    }
+                }
+
+                size_t cont_resultados = 0;
+                // Executa a busca
+                Contato *resultados = buscar_contatos(lista, contador, func_busca_cb, consulta, &cont_resultados);
+
+                printf("--- Resultados da Busca por '%s' em %s (%zu encontrados) ---\n", consulta, campo, cont_resultados);
+                listar_contatos(resultados, cont_resultados);
+                free(resultados); // Libera o vetor de resultados, mas nao a lista original!
+            }
+
+        } else if (strcmp(subcomando, "remover") == 0 || strcmp(subcomando, "remove") == 0) {
+            // Comando: ./simcon remover <id>
+            if (argc < 3) {
+                fprintf(stderr, "Uso: ./simcon remover <ID_do_contato>\n");
+            } else {
+                uint32_t id_remover = (uint32_t)strtoul(argv[2], NULL, 10);
+                
+                int resultado = remover_contato_por_id(&lista, &contador, id_remover);
+
+                if (resultado == 0) {
+                    // Se remover em memória, salva a lista compactada no arquivo
+                    if (salvar_contatos("data/contatos.bin", lista, contador) == 0) {
+                         printf("Contato ID %u removido e arquivo atualizado com sucesso!\n", id_remover);
+                    }
+                } else if (resultado == -1) {
+                    fprintf(stderr, "Erro: Contato ID %u não encontrado.\n", id_remover);
+                } else if (resultado == -2) {
+                    fprintf(stderr, "Erro fatal de alocação de memória ao remover.\n");
+                }
+            }
+            
+        } else if (strcmp(subcomando, "exportar") == 0 || strcmp(subcomando, "export") == 0) {
+            // Comando: ./simcon exportar <csv|texto> <nome_arquivo>
+            if (argc < 4) {
+                fprintf(stderr, "Uso: ./simcon exportar <csv|texto> <nome_arquivo.ext>\n");
+            } else {
+                const char *formato = argv[2];
+                const char *nome_arquivo = argv[3];
+                
+                exportar_contatos(nome_arquivo, formato, lista, contador);
+            }
+        
     } else {
         // Sem argumentos: modo de uso simples
         printf("SIMCON - Sistema de Gerenciamento de Contatos\n");
@@ -68,3 +129,4 @@ int main(int argc, char *argv[]) {
 
     return 0; 
 }
+
