@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h> // Para uint32_t e strtoul
 
 #include "contato.h"
 #include "utilidades.h"
-#include "armazenamento.h" // Inclui as funções de persistência
+#include "armazenamento.h" 
 
-// --- Loop Principal e Parsing de Comandos ---
+// --- Ponto de Entrada Principal ---
 
 int main(int argc, char *argv[]) {
     // A lista de contatos será carregada do arquivo
@@ -17,13 +18,16 @@ int main(int argc, char *argv[]) {
     if (carregar_contatos("data/contatos.bin", &lista, &contador) != 0) {
         fprintf(stderr, "Aviso: Falha ao carregar contatos, iniciando com lista vazia.\n");
     }
-
-    // 2. Parsing de linha de comando simples (subcomandos)
+    
+    // 2. Parsing de linha de comando (Todos os comandos)
     if (argc >= 2) {
         const char *subcomando = argv[1];
 
+        // -----------------------------------------------------------------
+        // 1. ADICIONAR
+        // Comando: ./simcon adicionar
+        // -----------------------------------------------------------------
         if (strcmp(subcomando, "adicionar") == 0 || strcmp(subcomando, "add") == 0) {
-            // Comando: ./simcon adicionar
             Contato c = {0}; 
             ler_contato_interativo(&c); 
             
@@ -33,8 +37,12 @@ int main(int argc, char *argv[]) {
                 }
             }
 
+        // -----------------------------------------------------------------
+        // 2. LISTAR
+        // Comando: ./simcon listar [--ordenar nome|email]
+        // -----------------------------------------------------------------
         } else if (strcmp(subcomando, "listar") == 0 || strcmp(subcomando, "list") == 0) {
-            // Comando: ./simcon listar [--ordenar nome|email]
+            
             int (*func_comparacao)(const void*, const void*) = comparar_por_nome; // Padrão: nome
             
             // Verifica se a opção de ordenação foi passada
@@ -47,28 +55,21 @@ int main(int argc, char *argv[]) {
                 }
             }
 
-            // Ordena o vetor (qsort usa ponteiro para função)
             qsort(lista, contador, sizeof(Contato), func_comparacao); 
             listar_contatos(lista, contador); 
 
-
-// 2. Parsing de linha de comando
-    if (argc >= 2) {
-        const char *subcomando = argv[1];
-
-        // ... Comandos ADICIONAR e LISTAR (como no exemplo anterior) ...
-
-        if (strcmp(subcomando, "buscar") == 0 || strcmp(subcomando, "find") == 0) {
-            // Comando: ./simcon buscar <consulta> [nome|email]
+        // -----------------------------------------------------------------
+        // 3. BUSCAR
+        // Comando: ./simcon buscar <consulta> [nome|email]
+        // -----------------------------------------------------------------
+        } else if (strcmp(subcomando, "buscar") == 0 || strcmp(subcomando, "find") == 0) {
             if (argc < 3) {
                 fprintf(stderr, "Uso: ./simcon buscar <substring> [nome|email]\n");
             } else {
                 const char *consulta = argv[2];
-                // Padrao: busca por nome (callback)
-                int (*func_busca_cb)(const Contato*, const char*) = busca_por_nome_cb; 
+                int (*func_busca_cb)(const Contato*, const char*) = busca_por_nome_cb; // Padrão
                 char *campo = "nome";
 
-                // Verifica se o campo de busca foi especificado
                 if (argc >= 4) {
                     if (strcmp(argv[3], "email") == 0) {
                         func_busca_cb = busca_por_email_cb;
@@ -77,25 +78,27 @@ int main(int argc, char *argv[]) {
                 }
 
                 size_t cont_resultados = 0;
-                // Executa a busca
                 Contato *resultados = buscar_contatos(lista, contador, func_busca_cb, consulta, &cont_resultados);
 
                 printf("--- Resultados da Busca por '%s' em %s (%zu encontrados) ---\n", consulta, campo, cont_resultados);
                 listar_contatos(resultados, cont_resultados);
-                free(resultados); // Libera o vetor de resultados, mas nao a lista original!
+                free(resultados); // IMPORTANTE: Liberar o vetor de resultados!
             }
-
+        
+        // -----------------------------------------------------------------
+        // 4. REMOVER
+        // Comando: ./simcon remover <id>
+        // -----------------------------------------------------------------
         } else if (strcmp(subcomando, "remover") == 0 || strcmp(subcomando, "remove") == 0) {
-            // Comando: ./simcon remover <id>
             if (argc < 3) {
                 fprintf(stderr, "Uso: ./simcon remover <ID_do_contato>\n");
             } else {
+                // strtoul (String To Unsigned Long) é seguro para ler uint32_t
                 uint32_t id_remover = (uint32_t)strtoul(argv[2], NULL, 10);
                 
                 int resultado = remover_contato_por_id(&lista, &contador, id_remover);
 
                 if (resultado == 0) {
-                    // Se remover em memória, salva a lista compactada no arquivo
                     if (salvar_contatos("data/contatos.bin", lista, contador) == 0) {
                          printf("Contato ID %u removido e arquivo atualizado com sucesso!\n", id_remover);
                     }
@@ -105,9 +108,12 @@ int main(int argc, char *argv[]) {
                     fprintf(stderr, "Erro fatal de alocação de memória ao remover.\n");
                 }
             }
-            
+
+        // -----------------------------------------------------------------
+        // 5. EXPORTAR
+        // Comando: ./simcon exportar <csv|texto> <nome_arquivo>
+        // -----------------------------------------------------------------
         } else if (strcmp(subcomando, "exportar") == 0 || strcmp(subcomando, "export") == 0) {
-            // Comando: ./simcon exportar <csv|texto> <nome_arquivo>
             if (argc < 4) {
                 fprintf(stderr, "Uso: ./simcon exportar <csv|texto> <nome_arquivo.ext>\n");
             } else {
@@ -117,6 +123,14 @@ int main(int argc, char *argv[]) {
                 exportar_contatos(nome_arquivo, formato, lista, contador);
             }
         
+        // -----------------------------------------------------------------
+        // 6. COMANDO DESCONHECIDO
+        // -----------------------------------------------------------------
+        } else {
+            fprintf(stderr, "Comando desconhecido: %s\n", subcomando);
+            printf("Uso: ./simcon <adicionar|listar|buscar|remover|exportar>\n");
+        }
+
     } else {
         // Sem argumentos: modo de uso simples
         printf("SIMCON - Sistema de Gerenciamento de Contatos\n");
@@ -124,9 +138,8 @@ int main(int argc, char *argv[]) {
         printf("Tente: ./simcon listar\n");
     }
 
-    // 3. Libera a memória alocada dinamicamente
+    // 3. Libera a memória alocada dinamicamente (para lista)
     free(lista);
 
     return 0; 
 }
-
