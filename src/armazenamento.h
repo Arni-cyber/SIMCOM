@@ -25,3 +25,16 @@ int carregar_contatos(const char *nome_arquivo, Contato **lista, size_t *contado
 int salvar_contatos(const char *nome_arquivo, const Contato *lista, size_t contador);
 
 #endif // ARMAZENAMENTO_H
+
+/**
+ * @brief Exporta a lista de contatos para um arquivo texto ou CSV.
+ * @param nome_arquivo O nome do arquivo de saida.
+ * @param formato O formato de exportacao ("texto" ou "csv").
+ * @param lista Lista de contatos.
+ * @param contador Numero de contatos.
+ * @return 0 em sucesso, -1 em falha.
+ */
+int exportar_contatos(const char *nome_arquivo, const char *formato, 
+                      const Contato *lista, size_t contador);
+
+#endif // ARMAZENAMENTO_H
