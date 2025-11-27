@@ -6,8 +6,8 @@
 // --- Funções Utilitárias ---
 
 /**
- * @brief Leitura interativa e segura de dados de contato do usuário.
- * @param c Ponteiro para a struct Contato onde os dados serão salvos.
+ brief Leitura interativa e segura de dados de contato do usuário.
+ param c Ponteiro para a struct Contato onde os dados serão salvos.
  */
 void ler_contato_interativo(Contato *c);
 
