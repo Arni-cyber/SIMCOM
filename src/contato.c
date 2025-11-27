@@ -9,11 +9,11 @@ static uint32_t proximo_id = 1;
 // --- Implementação do CRUD em Memória ---
 
 int adicionar_contato(Contato **lista, size_t *contador, const Contato *novo_contato) {
-    // 1. Alocação dinâmica com realloc para aumentar o vetor
+    // Alocação dinâmica com realloc para aumentar o vetor
     size_t novo_contador = *contador + 1;
     Contato *nova_lista = realloc(*lista, novo_contador * sizeof(Contato));
 
-    // 2. Tratar falha de alocação (ponteiro nulo)
+    // Tratar falha de alocação (ponteiro nulo)
     if (nova_lista == NULL) {
         fprintf(stderr, "Erro de alocação de memória ao adicionar contato.\n");
         return -1;
@@ -92,7 +92,7 @@ Contato *buscar_contatos(const Contato *lista, size_t contador,
 
     for (size_t i = 0; i < contador; i++) {
         if (func_busca(&lista[i], consulta)) {
-            // Se a busca for positiva, realoca o vetor de resultados e copia o contato
+           
             temp_count++;
             Contato *nova_lista = realloc(resultados, temp_count * sizeof(Contato));
 
@@ -131,8 +131,7 @@ int remover_contato_por_id(Contato **lista, size_t *contador, uint32_t id_remove
 
     // Compactar o vetor usando memmove
     if (indice_remover < (*contador - 1)) {
-        // move o bloco de memória que começa apos o item removido (indice_remover + 1)
-        // para a posicao do item removido (indice_remover).
+    
         memmove(&(*lista)[indice_remover], 
                 &(*lista)[indice_remover + 1], 
                 (*contador - indice_remover - 1) * sizeof(Contato));
@@ -145,7 +144,6 @@ int remover_contato_por_id(Contato **lista, size_t *contador, uint32_t id_remove
     Contato *nova_lista = realloc(*lista, (*contador) * sizeof(Contato));
   
     if (nova_lista == NULL && *contador > 0) {
-        // Falha de realloc MANTENDO o item removido, mas a memoria ficou inconsistente.
         return -2;
     }
     
@@ -153,4 +151,5 @@ int remover_contato_por_id(Contato **lista, size_t *contador, uint32_t id_remove
 
     return 0;
 }
+
 
