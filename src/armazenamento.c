@@ -46,9 +46,6 @@ int carregar_contatos(const char *nome_arquivo, Contato **lista, size_t *contado
     fclose(arquivo);
 
     *contador = num_contatos;
-    
-    // NOTA: A lógica para atualizar 'proximo_id' (em contato.c) deve ser adicionada aqui, 
-    // após o carregamento, para garantir que o próximo ID seja único.
 
     return 0;
 }
@@ -74,14 +71,7 @@ int salvar_contatos(const char *nome_arquivo, const Contato *lista, size_t conta
     return 0;
 }
 
-/**
- * @brief Exporta a lista de contatos para um arquivo texto ou CSV.
- * @param nome_arquivo O nome do arquivo de saida.
- * @param formato O formato de exportacao ("texto" ou "csv").
- * @param lista Lista de contatos.
- * @param contador Numero de contatos.
- * @return 0 em sucesso, -1 em falha.
- */
+
 int exportar_contatos(const char *nome_arquivo, const char *formato, 
                       const Contato *lista, size_t contador) {
     
@@ -101,6 +91,7 @@ int exportar_contatos(const char *nome_arquivo, const char *formato,
                     lista[i].id, lista[i].nome, lista[i].email, lista[i].idade);
         }
     } else if (strcmp(formato, "texto") == 0) {
+        
         // Formato de texto simples
         fprintf(arquivo, "--- Relatório de Contatos ---\n");
         for (size_t i = 0; i < contador; i++) {
@@ -117,3 +108,4 @@ int exportar_contatos(const char *nome_arquivo, const char *formato,
     fclose(arquivo);
     return 0;
 }
+
