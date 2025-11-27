@@ -19,11 +19,11 @@ int adicionar_contato(Contato **lista, size_t *contador, const Contato *novo_con
         return -1;
     }
 
-    // 3. Atualiza a lista e o contador
+    // Atualiza a lista e o contador
     *lista = nova_lista;
     (*contador)++;
 
-    // 4. Copia o novo contato para a última posição e atribui ID
+    // Copia o novo contato para a última posição e atribui ID
     Contato *c = &(*lista)[novo_contador - 1];
     *c = *novo_contato;
     c->id = proximo_id++; // Atribui o ID e incrementa
@@ -71,36 +71,18 @@ int comparar_por_email(const void *a, const void *b) {
 
 // --- Funções de Busca ---
 
-/**
- * @brief Função de callback para buscar por substring no nome.
- * @param contato O contato a ser verificado.
- * @param consulta A substring a ser buscada.
- * @return 1 se a substring for encontrada, 0 caso contrario.
- */
+
 int busca_por_nome_cb(const Contato *contato, const char *consulta) {
-    // strstr retorna NULL se a substring nao for encontrada.
-    // strcasestr e melhor, mas nao e padrao C (GNU extension). Usamos strstr por padrao.
+
     return strstr(contato->nome, consulta) != NULL;
 }
 
-/**
- * @brief Função de callback para buscar por substring no email.
- * @param contato O contato a ser verificado.
- * @param consulta A substring a ser buscada.
- * @return 1 se a substring for encontrada, 0 caso contrario.
- */
+
 int busca_por_email_cb(const Contato *contato, const char *consulta) {
     return strstr(contato->email, consulta) != NULL;
 }
 
-/**
- * @brief Realiza a busca em memoria usando uma funcao de callback.
- * @param lista Lista completa de contatos.
- * @param contador Numero total de contatos.
- * @param func_busca Ponteiro para a funcao de busca (callback).
- * @param consulta A string de busca.
- * @return Um ponteiro para uma nova lista de resultados (alocada dinamicamente) ou NULL.
- */
+
 Contato *buscar_contatos(const Contato *lista, size_t contador,
                          int (*func_busca)(const Contato*, const char*),
                          const char *consulta, size_t *cont_resultados) {
@@ -132,13 +114,6 @@ Contato *buscar_contatos(const Contato *lista, size_t contador,
 
 // --- Funções de Remoção ---
 
-/**
- * @brief Remove um contato da lista em memoria, usando memmove e realloc.
- * @param lista Ponteiro para a lista de contatos (Contato* *).
- * @param contador Ponteiro para o contador de contatos (size_t *).
- * @param id_remover O ID do contato a ser removido.
- * @return 0 em sucesso, -1 se nao encontrado, -2 se realloc falhar.
- */
 int remover_contato_por_id(Contato **lista, size_t *contador, uint32_t id_remover) {
     size_t indice_remover = -1;
 
@@ -154,7 +129,7 @@ int remover_contato_por_id(Contato **lista, size_t *contador, uint32_t id_remove
         return -1; // Contato não encontrado
     }
 
-    // 2. Compactar o vetor usando memmove
+    // Compactar o vetor usando memmove
     if (indice_remover < (*contador - 1)) {
         // move o bloco de memória que começa apos o item removido (indice_remover + 1)
         // para a posicao do item removido (indice_remover).
@@ -163,13 +138,12 @@ int remover_contato_por_id(Contato **lista, size_t *contador, uint32_t id_remove
                 (*contador - indice_remover - 1) * sizeof(Contato));
     }
 
-    // 3. Decrementar o contador
+    //  Decrementar o contador
     (*contador)--;
 
-    // 4. Redimensionar/encolher o vetor com realloc
+    //  Redimensionar/encolher o vetor com realloc
     Contato *nova_lista = realloc(*lista, (*contador) * sizeof(Contato));
-    
-    // NOTA: Se contador for 0, nova_lista pode ser NULL, o que e correto (lista vazia).
+  
     if (nova_lista == NULL && *contador > 0) {
         // Falha de realloc MANTENDO o item removido, mas a memoria ficou inconsistente.
         return -2;
@@ -179,3 +153,4 @@ int remover_contato_por_id(Contato **lista, size_t *contador, uint32_t id_remove
 
     return 0;
 }
+
